@@ -1,8 +1,7 @@
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import Image from 'next/image';
-import jwt_decode from 'jwt-decode';
 
 
 export default function Login() {
@@ -10,53 +9,55 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleGoogleLogin = async (credentialResponse) => {
-    if (!credentialResponse?.credential) {
-      setErrorMessage('Token no recibido');
-      return;
-    }
-  
     try {
-      // Decodificar el token UNA sola vez
-      const decodedToken = jwt_decode(credentialResponse.credential);
-      console.log('[DEBUG] Token decodificado:', decodedToken);
-      
-      // Verificar dominio del correo
-      if (!decodedToken.email.endsWith('unsa.edu.pe')) {
-        setErrorMessage('Solo correos institucionales @unsa.edu.pe permitidos');
-        return;
-      }
+      const { credential } = credentialResponse;
+  
+      // Decodificar sin la librería externa, utilizando un método nativo
+      const base64Url = credential.split('.')[1]; 
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join('')
+      );
+      const decodedToken = JSON.parse(jsonPayload);
+      console.log('Decoded Token:', decodedToken);
   
       const email = decodedToken.email;
-  
+      console.log('Correo del usuario:', email);
+
       // Obtener todos los usuarios
       const response = await fetch('https://backendunsa.onrender.com/api/usuarios', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-  
+
       if (response.ok) {
         const users = await response.json();
-        const user = users.find(u => u.correoElectronico === email);
-        
+        const user = users.find((user) => user.correoElectronico === email);
         if (user) {
-          // Almacenar en localStorage y cookies
+          console.log('Datos del usuario:', user);
           localStorage.setItem('usuario', JSON.stringify(user));
-          document.cookie = `usuario=${JSON.stringify(user)}; path=/; max-age=18000; secure; SameSite=Lax`;
-          
-          // Redirigir
+
+          const userCookie = encodeURIComponent(JSON.stringify(user));
+          document.cookie = `usuario=${userCookie}; path=/; max-age=18000; secure; SameSite=Strict;`;
+
           router.push('/casa');
         } else {
-          setErrorMessage('Usuario no registrado en el sistema');
+          setErrorMessage('Por favor, ingrese con un correo válido.');
         }
       } else {
-        setErrorMessage('Error al conectar con el servidor. Intente nuevamente.');
+        console.error('Error al obtener los usuarios');
       }
     } catch (error) {
-      console.error('Error en autenticación:', error);
-      setErrorMessage('Error en el proceso de autenticación');
+      console.error('Error decodificando el token:', error);
     }
   };
-
 
   return (
     <div className="flex flex-col w-full h-screen items-center justify-center relative overflow-hidden">
@@ -90,17 +91,13 @@ export default function Login() {
   
       {/* Botón */}
       <div className="mb-6 px-4" data-testid="Boton Google">
-      <GoogleLogin
-        clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
-        onSuccess={handleGoogleLogin}
-        onError={() => setErrorMessage('Error: dominio no autorizado')}
-        useOneTap
-        auto_select
-        ux_mode="popup"
-        // ¡ESTA LÍNEA ES CLAVE! ⬇️
-        hosted_domain="unsa.edu.pe" // Solo permite correos institucionales
-        cookiePolicy="single_host_origin"
-      />
+        <GoogleLogin
+          onSuccess={handleGoogleLogin}
+          onError={() => {
+            console.log('Login Failed');
+            setErrorMessage('Error en el inicio de sesión. Inténtelo nuevamente.');
+          }}
+        />
       </div>
       {/* Mensaje de error */}
       {errorMessage && (
