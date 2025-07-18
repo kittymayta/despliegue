@@ -91,13 +91,17 @@ export default function Login() {
   
       {/* Botón */}
       <div className="mb-6 px-4" data-testid="Boton Google">
-        <GoogleLogin
-          clientId="1095721258243-2e6davn80augllobf2dma5k7h7spc1fs.apps.googleusercontent.com"
-          onSuccess={handleGoogleLogin}
-          onError={() => {
-            console.log('Login Failed');
-            setErrorMessage('Error en el inicio de sesión. Inténtelo nuevamente.');
-          }}
+      <GoogleLogin
+        clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
+        onSuccess={handleGoogleLogin}
+        onError={() => {
+          console.log('Login Failed');
+          setErrorMessage('Error en el inicio de sesión. Inténtelo nuevamente.');
+        }}
+        useOneTap // Opcional: para mostrar el popup automático
+        auto_select // Opcional: selección automática de cuenta
+        ux_mode="popup" // Fuerza el modo popup
+        cookiePolicy={'single_host_origin'}
         />
       </div>
       {/* Mensaje de error */}
