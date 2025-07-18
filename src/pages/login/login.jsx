@@ -93,16 +93,19 @@ export default function Login() {
       <div className="mb-6 px-4" data-testid="Boton Google">
       <GoogleLogin
         clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
+        buttonText="Login with Google"
         onSuccess={handleGoogleLogin}
-        onError={() => {
-          console.log('Login Failed');
-          setErrorMessage('Error en el inicio de sesión. Inténtelo nuevamente.');
-        }}
-        useOneTap // Opcional: para mostrar el popup automático
-        auto_select // Opcional: selección automática de cuenta
-        ux_mode="popup" // Fuerza el modo popup
+        onFailure={() => setErrorMessage('Error en autenticación')}
         cookiePolicy={'single_host_origin'}
-        />
+        render={renderProps => (
+          <button 
+            onClick={renderProps.onClick}
+            className="google-login-button"
+          >
+            Sign in with Google
+          </button>
+        )}
+      />
       </div>
       {/* Mensaje de error */}
       {errorMessage && (
