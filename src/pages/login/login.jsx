@@ -10,17 +10,30 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleGoogleLogin = async (credentialResponse) => {
+    if (!credentialResponse?.credential) {
+      setErrorMessage('Token no recibido');
+      return;
+    }
+  
     try {
-      const { credential } = credentialResponse;
-      const decodedToken = jwt_decode(credential); // Decodifica correctamente
+      // Decodificar el token UNA sola vez
+      const decodedToken = jwt_decode(credentialResponse.credential);
+      console.log('[DEBUG] Token decodificado:', decodedToken);
+      
+      // Verificar dominio del correo
+      if (!decodedToken.email.endsWith('unsa.edu.pe')) {
+        setErrorMessage('Solo correos institucionales @unsa.edu.pe permitidos');
+        return;
+      }
+  
       const email = decodedToken.email;
-
+  
       // Obtener todos los usuarios
       const response = await fetch('https://backendunsa.onrender.com/api/usuarios', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
-
+  
       if (response.ok) {
         const users = await response.json();
         const user = users.find(u => u.correoElectronico === email);
@@ -33,7 +46,7 @@ export default function Login() {
           // Redirigir
           router.push('/casa');
         } else {
-          setErrorMessage('Por favor, ingrese con un correo institucional válido.');
+          setErrorMessage('Usuario no registrado en el sistema');
         }
       } else {
         setErrorMessage('Error al conectar con el servidor. Intente nuevamente.');
