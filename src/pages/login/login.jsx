@@ -55,23 +55,23 @@ export default function Login() {
         </h1>
       </div>
 
-      {/* Botón login */}
-      <div className="mb-6 px-4">
+       {/* Botón login personalizado con ícono de Google */}
+       <div className="mb-6 px-4">
         <button
           onClick={handleGoogleLogin}
-          className="bg-white text-black px-6 py-2 rounded-full shadow-lg hover:bg-gray-200 transition"
+          className="flex items-center bg-white text-black px-6 py-2 rounded-full shadow-lg hover:bg-gray-200 transition"
         >
-          Iniciar sesión con Google
+          <Image
+            src="/images/google-icon.png"
+            alt="Google Logo"
+            width={20}
+            height={20}
+            className="mr-2"
+          />
+          <span>Iniciar sesión con Google</span>
         </button>
       </div>
-
-      {/* Mensaje de error */}
-      {errorMessage && (
-        <div className="text-red-500 text-sm mb-4 px-4 text-center font-bold">
-          {errorMessage}
-        </div>
-      )}
-
+      
       {/* Footer */}
       <footer
         className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center p-4 bg-white text-black space-y-4 md:space-y-0"
