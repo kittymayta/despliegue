@@ -77,16 +77,17 @@ export default function Login() {
   
       {/* Botón */}
       <div className="mb-6 px-4" data-testid="Boton Google">
-        <GoogleLogin
-          clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
-          onSuccess={handleGoogleLogin}
-          onError={() => setErrorMessage('Error en autenticación con Google')}
-          useOneTap
-          auto_select
-          ux_mode="popup"
-          cookiePolicy="single_host_origin"
-          scope="openid profile email"
-        />
+      <GoogleLogin
+        clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
+        onSuccess={handleGoogleLogin}
+        onError={() => setErrorMessage('Error: dominio no autorizado')}
+        useOneTap
+        auto_select
+        ux_mode="popup"
+        // ¡ESTA LÍNEA ES CLAVE! ⬇️
+        hosted_domain="unsa.edu.pe" // Solo permite correos institucionales
+        cookiePolicy="single_host_origin"
+      />
       </div>
       {/* Mensaje de error */}
       {errorMessage && (
