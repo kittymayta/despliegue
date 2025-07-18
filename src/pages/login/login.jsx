@@ -92,7 +92,7 @@ export default function Login() {
       {/* Botón */}
       <div className="mb-6 px-4" data-testid="Boton Google">
         <GoogleLogin
-          clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
+          clientId="1095721258243-2e6davn80augllobf2dma5k7h7spc1fs.apps.googleusercontent.com"
           onSuccess={handleGoogleLogin}
           onError={() => {
             console.log('Login Failed');
