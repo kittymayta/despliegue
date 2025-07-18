@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }) {
   const isLoginPage = router.pathname === '/login/login';
 
   return (
-    <GoogleOAuthProvider clientId="338339807279-3fke3b892u4vr6hq23kn0at1f8tabl3p.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com">
       <AlertDialogProvider>
         {/* Envolvemos con ErrorBoundary para capturar cualquier error */}
         <ErrorBoundary>
