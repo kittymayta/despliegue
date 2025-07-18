@@ -1,0 +1,11 @@
+# Excluir node_modules
+node_modules/
+
+# Excluir la carpeta .next generada por Next.js
+.next/
+
+# Excluir archivos de entorno si no quieres subirlos (opcional)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
