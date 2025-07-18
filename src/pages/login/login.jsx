@@ -1,25 +1,68 @@
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import Image from 'next/image';
+
 
 export default function Login() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (credentialResponse) => {
     try {
-      await signIn('google', { callbackUrl: '/casa' });
+      const { credential } = credentialResponse;
+  
+      // Decodificar sin la librería externa, utilizando un método nativo
+      const base64Url = credential.split('.')[1]; 
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join('')
+      );
+      const decodedToken = JSON.parse(jsonPayload);
+      console.log('Decoded Token:', decodedToken);
+  
+      const email = decodedToken.email;
+      console.log('Correo del usuario:', email);
+
+      // Obtener todos los usuarios
+      const response = await fetch('https://backendunsa.onrender.com/api/usuarios', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const users = await response.json();
+        const user = users.find((user) => user.correoElectronico === email);
+        if (user) {
+          console.log('Datos del usuario:', user);
+          localStorage.setItem('usuario', JSON.stringify(user));
+
+          const userCookie = encodeURIComponent(JSON.stringify(user));
+          document.cookie = `usuario=${userCookie}; path=/; max-age=18000; secure; SameSite=Strict;`;
+
+          router.push('/casa');
+        } else {
+          setErrorMessage('Por favor, ingrese con un correo válido.');
+        }
+      } else {
+        console.error('Error al obtener los usuarios');
+      }
     } catch (error) {
-      console.error('Login Error:', error);
-      setErrorMessage('Error en el inicio de sesión.');
+      console.error('Error decodificando el token:', error);
     }
   };
 
   return (
     <div className="flex flex-col w-full h-screen items-center justify-center relative overflow-hidden">
       {/* Imagen UNSA fondo */}
-      <div
+      <div data-testid="Imagen fondo"
         className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage: "url('/images/unsa nueva portada.jpg')",
@@ -28,85 +71,56 @@ export default function Login() {
           filter: 'brightness(0.5)',
         }}
       ></div>
-
+  
       {/* Logos y Línea de Separación */}
       <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-16 mb-8 p-4">
-        <Image
-          src="/images/logo-unsa.png"
-          alt="Logo UNSA"
-          width={200}
-          height={200}
-          className="w-24 md:w-48 h-auto"
-        />
+        {/* Logo UNSA */}
+        <Image src="/images/logo-unsa.png" alt="Imagen 1" className="w-24 md:w-48 h-auto" width={500} height={500}/>
+        {/* Línea de separación */}
         <div className="hidden md:block w-px h-16 bg-white"></div>
-        <Image
-          src="/images/logoinvesti.png"
-          alt="Logo Instituto"
-          width={160}
-          height={160}
-          className="w-20 md:w-32 h-auto"
-        />
+        {/* Logo Instituto de Investigación */}
+        <Image src="/images/logoinvesti.png" alt="Imagen 2" className="w-20 md:w-32 h-auto" width={500} height={500} />
       </div>
-
+  
       {/* Título */}
       <div className="mb-6 px-4 text-center max-w-full md:max-w-4xl">
         <h1 className="text-xl md:text-4xl font-lato text-white leading-relaxed">
           Plataforma de Gestión documental para la acreditación y certificación de laboratorios e institutos de investigación
         </h1>
       </div>
-
-       {/* Botón login personalizado con ícono de Google */}
-       <div className="mb-6 px-4">
-        <button
-          onClick={handleGoogleLogin}
-          className="flex items-center bg-white text-black px-6 py-2 rounded-full shadow-lg hover:bg-gray-200 transition"
-        >
-          <Image
-            src="/images/google-icon.png"
-            alt="Google Logo"
-            width={20}
-            height={20}
-            className="mr-2"
-          />
-          <span>Iniciar sesión con Google</span>
-        </button>
+  
+      {/* Botón */}
+      <div className="mb-6 px-4" data-testid="Boton Google">
+        <GoogleLogin
+          clientId="847674728805-dm3f6ed36u265kk6lc0alrc2sjml78ea.apps.googleusercontent.com"
+          onSuccess={handleGoogleLogin}
+          onError={() => {
+            console.log('Login Failed');
+            setErrorMessage('Error en el inicio de sesión. Inténtelo nuevamente.');
+          }}
+        />
       </div>
-      
+      {/* Mensaje de error */}
+      {errorMessage && (
+        <div className="text-red-500 text-sm mb-4 px-4 text-center font-bold">
+          {errorMessage}
+        </div>
+      )}
+  
       {/* Footer */}
-      <footer
-        className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center p-4 bg-white text-black space-y-4 md:space-y-0"
-        style={{ filter: 'grayscale(70%)' }}
-      >
-        <div className="flex flex-col md:flex-row items-center space-x-2 text-center">
-          <Image
-            src="/images/correo.png"
-            alt="Correo"
-            width={32}
-            height={32}
-            className="w-5 h-auto"
-          />
-          <span className="text-xs md:text-base font-lato">
-            vri.institutoinvestigacion@unsa.edu.pe
-          </span>
+      <footer className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center p-4 bg-white text-black space-y-4 md:space-y-0" style={{ filter: 'grayscale(70%)' }}>
+        <div className="flex flex-col md:flex-row items-center space-x-0 md:space-x-2 text-center">
+          <Image src="/images/correo.png" alt="Logo 1" className="w-5 md:w-8 h-auto" width={500} height={500}/>
+          <h1 className="text-xs md:text-base font-lato">vri.institutoinvestigacion@unsa.edu.pe</h1>
         </div>
-        <div className="flex flex-col md:flex-row items-center space-x-2 text-center">
-          <Image
-            src="/images/llamada-telefonica.png"
-            alt="Teléfono"
-            width={32}
-            height={32}
-            className="w-5 h-auto"
-          />
-          <span className="text-xs md:text-base font-lato">+51 916 559 387</span>
+  
+        <div className="flex flex-col md:flex-row items-center space-x-0 md:space-x-2 text-center">
+          <Image src="/images/llamada-telefonica.png" alt="Logo 2" className="w-5 md:w-8 h-auto" width={500} height={500}/>
+          <h1 className="text-xs md:text-base font-lato">+51 916 559 387</h1>
         </div>
-        <div className="flex flex-col md:flex-row items-center space-x-2 text-center">
-          <Image
-            src="/images/facebook.png"
-            alt="Facebook"
-            width={32}
-            height={32}
-            className="w-5 h-auto"
-          />
+  
+        <div className="flex flex-col md:flex-row items-center space-x-0 md:space-x-2 text-center">
+          <Image src="/images/facebook.png" alt="Logo 3" className="w-5 md:w-8 h-auto" width={500} height={500}/>
           <a
             href="https://www.facebook.com/DirecciondeInstitutodeInvestigacionUNSA"
             target="_blank"
