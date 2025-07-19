@@ -38,21 +38,28 @@ const Auditoria = () => {
     const [auditoriasFiltradas, setAuditoriasFiltradas] = useState([]);
     const [selectedState, setSelectedState] = useState("0");
 
-    const fetchAuditorias = useCallback(async () => {
-        try {
-            const response = await getRef.current("auditorias");
+    useEffect(() => {
+        let mounted = true;
+      
+        const fetchData = async () => {
+          try {
+            const response = await get("auditorias");
             console.log(response);
+            if (!mounted) return;            // si ya se desmontó, no hacemos setState
             setAuditorias(response);
             setAuditoriasFiltradas(response);
-        } catch (error) {
+          } catch (error) {
             console.log("Error al obtener las auditorias: ", error);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchAuditorias();
-    }, [fetchAuditorias]); 
-
+          }
+        };
+      
+        fetchData();
+      
+        return () => {
+          mounted = false;                  // al desmontar, marcamos mounted = false
+        };
+      }, [get]);
+      
     useEffect(() => {
         if (selectedState === "0") {
             setAuditoriasFiltradas(auditorias);
