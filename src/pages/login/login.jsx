@@ -30,7 +30,7 @@ export default function Login() {
       console.log('Correo del usuario:', email);
 
       // Obtener todos los usuarios
-      const response = await fetch('https://backendunsa.onrender.com/api/usuarios', {
+      const response = await fetch('https://gestiondeauditorias-1.onrender.com/api/usuarios', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

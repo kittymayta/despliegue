@@ -7,7 +7,7 @@ const useCRUD = () => {
   const confirm = useConfirm();
 
   const api = axios.create({
-    baseURL: 'https://backendunsa.onrender.com/api/',
+    baseURL: 'https://gestiondeauditorias-1.onrender.com/api/',
     headers: {
       'Content-Type': 'application/json',
     }
