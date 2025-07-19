@@ -29,6 +29,8 @@ import {
 
 const Auditoria = () => {
     const { get} = useCRUD();
+    const getRef = useRef(get);
+    getRef.current = get;
     const filasPorPagina = 10;
     const [startIndex, setStartIndex]=useState(0)
     const [endIndex, setEndIndex]=useState(filasPorPagina)
@@ -36,19 +38,20 @@ const Auditoria = () => {
     const [auditoriasFiltradas, setAuditoriasFiltradas] = useState([]);
     const [selectedState, setSelectedState] = useState("0");
 
-    const fetchAuditorias = async()=>{
+    const fetchAuditorias = useCallback(async () => {
         try {
-            const response = await get("auditorias")
+            const response = await getRef.current("auditorias");
             console.log(response);
             setAuditorias(response);
             setAuditoriasFiltradas(response);
         } catch (error) {
             console.log("Error al obtener las auditorias: ", error);
         }
-    }
+    }, []);
+
     useEffect(() => {
         fetchAuditorias();
-    }, []);
+    }, [fetchAuditorias]); 
 
     useEffect(() => {
         if (selectedState === "0") {
