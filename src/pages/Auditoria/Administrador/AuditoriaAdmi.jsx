@@ -36,20 +36,19 @@ const Auditoria = () => {
     const [auditoriasFiltradas, setAuditoriasFiltradas] = useState([]);
     const [selectedState, setSelectedState] = useState("0");
 
-    const fetchAuditorias = useCallback(async () => {
+    const fetchAuditorias = async()=>{
         try {
-            const response = await get("auditorias");
+            const response = await get("auditorias")
             console.log(response);
             setAuditorias(response);
             setAuditoriasFiltradas(response);
         } catch (error) {
             console.log("Error al obtener las auditorias: ", error);
         }
-    }, [get]);
-
+    }
     useEffect(() => {
         fetchAuditorias();
-    }, [fetchAuditorias]); 
+    }, []);
 
     useEffect(() => {
         if (selectedState === "0") {
